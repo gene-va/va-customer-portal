@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap');
+
+:root {
+  --color-bg-primary: #e8e2d4;
+  --color-bg-surface: #ffffff;
+  --color-text-primary: #0d1b2a;
+  --color-text-secondary: #3d4f63;
+  --color-text-muted: #6b7a8d;
+  --color-accent: #c9a96e;
+  --color-accent-hover: #b8993f;
+  --color-navy: #0d1b2a;
+  --color-blue: #1a5fb4;
+  --color-border: #d4cdbf;
+
+  --font-heading: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  --font-body: 'Source Sans 3', 'Lato', 'Segoe UI', sans-serif;
+  --font-size-body: clamp(0.9375rem, 1.5vw, 1.0625rem);
+  --line-height-body: 1.65;
+  --border-radius-card: 8px;
+  --transition-default: 0.3s ease;
+}
+
+body {
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}
+
+::selection {
+  background-color: rgba(13, 27, 42, 0.15);
+  color: #0d1b2a;
+}
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #e8e2d4; }
+::-webkit-scrollbar-thumb { background: #d4cdbf; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #bfb8a8; }
+
+/* Print */
+@media print {
+  .no-print { display: none !important; }
+  body { background: white !important; }
+  nav, aside { display: none !important; }
+  @page { margin: 0.6in 0.5in; size: letter; }
+  section { page-break-inside: avoid; }
+  #investors, #strategy, #fit-analysis { page-break-before: always; }
+}
