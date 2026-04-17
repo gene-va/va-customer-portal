@@ -31,3 +31,10 @@ next-env.d.ts
 
 # Claude local
 .claude/
+
+# Client reports / confidential material
+pnm_investor_demo.html
+reports/
+
+# Stray root public/ (Next.js app lives in portal/)
+/public/
