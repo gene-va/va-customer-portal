@@ -8,11 +8,15 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles = {
-  primary: "bg-va-navy text-white font-semibold hover:bg-va-navy-light active:opacity-90",
-  secondary: "bg-va-surface border border-va-border text-va-text hover:bg-va-surface-2",
-  danger: "bg-va-red text-white hover:opacity-90",
-  ghost: "bg-transparent text-va-text-muted hover:text-va-text hover:bg-va-surface-2",
-  navy: "bg-va-navy text-white font-semibold hover:bg-va-navy-light",
+  primary:
+    "bg-va-gradient text-white font-semibold border border-va-accent/30 hover:shadow-va-glow active:opacity-90",
+  secondary:
+    "bg-va-surface border border-va-border text-va-text hover:bg-va-surface-2 hover:border-va-accent/40",
+  danger: "bg-va-red text-white font-semibold hover:opacity-90",
+  ghost:
+    "bg-transparent text-va-text-muted hover:text-va-text hover:bg-va-surface-2",
+  navy:
+    "bg-va-gradient text-white font-semibold border border-va-accent/30 hover:shadow-va-glow",
 };
 
 const sizeStyles = {

@@ -87,7 +87,7 @@ export default function ReportEditor({ report }: { report: Report }) {
     <div className="space-y-6">
       {/* Metadata Card */}
       <Card>
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">
+        <h3 className="text-lg font-semibold text-va-text mb-6">
           Report Information
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -98,7 +98,7 @@ export default function ReportEditor({ report }: { report: Report }) {
           />
 
           <div>
-            <label className="block mb-2 text-sm font-medium text-gray-700">
+            <label className="block mb-2 text-sm font-medium text-va-text-secondary">
               Status
             </label>
             <select
@@ -106,7 +106,7 @@ export default function ReportEditor({ report }: { report: Report }) {
               onChange={(e) =>
                 setStatus(e.target.value as 'draft' | 'published' | 'archived')
               }
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-colors"
+              className="w-full px-4 py-2 border border-va-border rounded-lg focus:ring-2 focus:ring-va-accent/30 focus:border-va-accent/50 transition-colors"
             >
               <option value="draft">Draft</option>
               <option value="published">Published</option>
@@ -118,13 +118,13 @@ export default function ReportEditor({ report }: { report: Report }) {
 
       {/* JSON Editor */}
       <Card>
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">
+        <h3 className="text-lg font-semibold text-va-text mb-6">
           Report Data (JSON)
         </h3>
 
         <div className="space-y-4">
           <div>
-            <label className="block mb-2 text-sm font-medium text-gray-700">
+            <label className="block mb-2 text-sm font-medium text-va-text-secondary">
               JSON Content
             </label>
             <textarea
@@ -133,7 +133,7 @@ export default function ReportEditor({ report }: { report: Report }) {
               className={`w-full h-96 px-4 py-3 font-mono text-sm border rounded-lg focus:ring-2 focus:border-transparent transition-colors ${
                 jsonError
                   ? 'border-red-300 focus:ring-red-500'
-                  : 'border-gray-200 focus:ring-brand-500'
+                  : 'border-va-border focus:ring-va-accent'
               }`}
               placeholder="Enter valid JSON..."
             />
@@ -144,8 +144,8 @@ export default function ReportEditor({ report }: { report: Report }) {
             )}
           </div>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p className="text-sm text-blue-800">
+          <div className="bg-va-blue/10 border border-va-blue/25 rounded-lg p-4">
+            <p className="text-sm text-va-blue">
               Edit the JSON data directly or upload a new JSON file below.
             </p>
           </div>
@@ -154,13 +154,13 @@ export default function ReportEditor({ report }: { report: Report }) {
 
       {/* File Upload */}
       <Card>
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">
+        <h3 className="text-lg font-semibold text-va-text mb-6">
           Upload Report Data
         </h3>
 
         <div className="relative">
           <div
-            className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors cursor-pointer"
+            className="border-2 border-dashed border-va-border rounded-lg p-8 text-center hover:border-va-accent/50 transition-colors cursor-pointer"
             onDragOver={(e) => {
               e.preventDefault();
               e.currentTarget.style.borderColor = 'rgb(79, 70, 229)';
@@ -201,11 +201,11 @@ export default function ReportEditor({ report }: { report: Report }) {
               if (input) input.click();
             }}
           >
-            <Upload className="mx-auto mb-3 text-gray-400" size={32} />
-            <p className="text-gray-700 font-medium">
+            <Upload className="mx-auto mb-3 text-va-text-muted" size={32} />
+            <p className="text-va-text-secondary font-medium">
               Drag and drop a JSON file here
             </p>
-            <p className="text-gray-600 text-sm mt-1">or click to select a file</p>
+            <p className="text-va-text-secondary text-sm mt-1">or click to select a file</p>
           </div>
           <input
             id={`json-file-input-${report.id}`}

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/server';
-import { reportSchema } from '@/lib/schemas/report';
+import { reportSchema, isDealRoomData, isProspectResearchData } from '@/lib/schemas/report';
 
 export async function POST(request: NextRequest) {
   try {
@@ -33,21 +33,36 @@ export async function POST(request: NextRequest) {
 
     // Parse request
     const body = await request.json();
-    const { client_id, title, report_data, status = 'draft' } = body;
+    const {
+      client_id,
+      client_service_id,
+      title,
+      report_data,
+      status = 'draft',
+      campaign_type = 'general',
+      event_name = null,
+    } = body;
 
     // Validate input
-    if (!client_id || !title) {
+    if (!client_id || !client_service_id || !title) {
       return NextResponse.json(
-        { error: 'Missing required fields: client_id, title' },
+        { error: 'Missing required fields: client_id, client_service_id, title' },
         { status: 400 }
       );
     }
+    if (campaign_type !== 'event' && campaign_type !== 'general') {
+      return NextResponse.json({ error: 'Invalid campaign_type' }, { status: 400 });
+    }
 
-    // Validate report_data with Zod
-    let validatedData = {};
+    // Validate report_data — v2/v3 pass through; v1 uses strict schema; empty is fine for generic
+    let validatedData: unknown = {};
     if (report_data) {
       try {
-        validatedData = reportSchema.parse(report_data);
+        if (isProspectResearchData(report_data) || isDealRoomData(report_data)) {
+          validatedData = report_data;
+        } else if (Object.keys(report_data).length > 0) {
+          validatedData = reportSchema.parse(report_data);
+        }
       } catch (err) {
         return NextResponse.json(
           { error: 'Invalid report data format' },
@@ -62,9 +77,12 @@ export async function POST(request: NextRequest) {
       .from('reports')
       .insert({
         client_id,
+        client_service_id,
         title,
-        report_data: validatedData,
+        report_data: validatedData as Record<string, unknown>,
         status,
+        campaign_type,
+        event_name,
       })
       .select()
       .single();
@@ -86,6 +104,9 @@ export async function POST(request: NextRequest) {
       details: {
         title,
         client_id,
+        client_service_id,
+        campaign_type,
+        event_name,
       },
     });
 

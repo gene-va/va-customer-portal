@@ -5,23 +5,19 @@ import { Users, FileText, CheckCircle, Activity } from 'lucide-react';
 async function getAdminStats() {
   const supabase = await createClient();
 
-  // Get total clients
   const { count: clientCount } = await supabase
     .from('clients')
     .select('id', { count: 'exact', head: true });
 
-  // Get total reports
   const { count: reportCount } = await supabase
     .from('reports')
     .select('id', { count: 'exact', head: true });
 
-  // Get published reports count
   const { count: publishedCount } = await supabase
     .from('reports')
     .select('id', { count: 'exact', head: true })
     .eq('status', 'published');
 
-  // Get recent audit log activity (last 7 days)
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
@@ -42,25 +38,35 @@ interface StatCardProps {
   icon: React.ReactNode;
   label: string;
   value: number;
-  color: 'blue' | 'green' | 'purple' | 'orange';
+  tone: 'cyan' | 'blue' | 'green' | 'amber';
 }
 
-function StatCard({ icon, label, value, color }: StatCardProps) {
-  const colorClasses = {
-    blue: 'bg-blue-50 text-blue-600',
-    green: 'bg-green-50 text-green-600',
-    purple: 'bg-purple-50 text-purple-600',
-    orange: 'bg-orange-50 text-orange-600',
-  };
+function StatCard({ icon, label, value, tone }: StatCardProps) {
+  const toneClasses = {
+    cyan: 'border-va-accent/25 shadow-va-glow',
+    blue: 'border-va-blue/25',
+    green: 'border-va-green/25',
+    amber: 'border-va-amber/25',
+  }[tone];
+  const iconTone = {
+    cyan: 'text-va-accent',
+    blue: 'text-va-blue',
+    green: 'text-va-green',
+    amber: 'text-va-amber',
+  }[tone];
 
   return (
-    <Card className={`${colorClasses[color]} border-0`}>
+    <Card className={`${toneClasses}`}>
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-600 mb-1">{label}</p>
-          <p className="text-3xl font-bold">{value.toLocaleString()}</p>
+          <p className="text-xs font-body font-semibold uppercase tracking-wider text-va-text-muted mb-1">
+            {label}
+          </p>
+          <p className="font-heading text-3xl font-bold text-va-text">
+            {value.toLocaleString()}
+          </p>
         </div>
-        <div className="text-4xl opacity-20">{icon}</div>
+        <div className={`${iconTone} opacity-70`}>{icon}</div>
       </div>
     </Card>
   );
@@ -71,66 +77,51 @@ export default async function AdminDashboard() {
 
   return (
     <div className="space-y-8">
-      {/* Welcome Header */}
       <div>
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">
-          Welcome to Admin Portal
+        <h1 className="font-heading text-4xl font-bold text-va-text mb-2">
+          Welcome to the Admin Portal
         </h1>
-        <p className="text-gray-600">
-          Manage clients and reports for the VA platform
+        <p className="text-va-text-secondary font-body">
+          Manage clients, service blocks, and campaigns.
         </p>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          icon={<Users size={32} />}
-          label="Total Clients"
-          value={stats.clientCount}
-          color="blue"
-        />
-        <StatCard
-          icon={<FileText size={32} />}
-          label="Total Reports"
-          value={stats.reportCount}
-          color="purple"
-        />
+        <StatCard icon={<Users size={32} />} label="Total Clients" value={stats.clientCount} tone="cyan" />
+        <StatCard icon={<FileText size={32} />} label="Total Reports" value={stats.reportCount} tone="blue" />
         <StatCard
           icon={<CheckCircle size={32} />}
           label="Published Reports"
           value={stats.publishedCount}
-          color="green"
+          tone="green"
         />
         <StatCard
           icon={<Activity size={32} />}
           label="Recent Activity (7d)"
           value={stats.recentActivityCount}
-          color="orange"
+          tone="amber"
         />
       </div>
 
-      {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Quick Actions
-          </h3>
-          <div className="space-y-3">
+          <h3 className="font-heading text-lg font-semibold text-va-text mb-4">Quick Actions</h3>
+          <div className="space-y-2">
             <a
               href="/admin/clients/new"
-              className="block px-4 py-3 bg-brand-50 hover:bg-brand-100 text-brand-700 font-medium rounded-lg transition-colors"
+              className="block px-4 py-3 rounded-card border border-va-accent/30 bg-va-accent/10 text-va-accent font-body font-semibold hover:bg-va-accent/15 transition-colors"
             >
               + Create New Client
             </a>
             <a
               href="/admin/clients"
-              className="block px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors"
+              className="block px-4 py-3 rounded-card border border-va-border bg-va-surface-2 text-va-text-secondary font-body font-medium hover:border-va-accent/30 hover:text-va-text transition-colors"
             >
               View All Clients
             </a>
             <a
               href="/admin/audit-log"
-              className="block px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-colors transition-colors"
+              className="block px-4 py-3 rounded-card border border-va-border bg-va-surface-2 text-va-text-secondary font-body font-medium hover:border-va-accent/30 hover:text-va-text transition-colors"
             >
               View Audit Log
             </a>
@@ -138,40 +129,26 @@ export default async function AdminDashboard() {
         </Card>
 
         <Card>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            System Status
-          </h3>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">Database Connection</span>
-              <span className="flex items-center gap-2">
-                <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-                <span className="text-sm font-medium text-green-700">
-                  Connected
-                </span>
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">Authentication</span>
-              <span className="flex items-center gap-2">
-                <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-                <span className="text-sm font-medium text-green-700">
-                  Active
-                </span>
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">API Status</span>
-              <span className="flex items-center gap-2">
-                <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-                <span className="text-sm font-medium text-green-700">
-                  Operational
-                </span>
-              </span>
-            </div>
+          <h3 className="font-heading text-lg font-semibold text-va-text mb-4">System Status</h3>
+          <div className="space-y-3 font-body text-sm">
+            <StatusRow label="Database Connection" status="Connected" />
+            <StatusRow label="Authentication" status="Active" />
+            <StatusRow label="API Status" status="Operational" />
           </div>
         </Card>
       </div>
+    </div>
+  );
+}
+
+function StatusRow({ label, status }: { label: string; status: string }) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-va-text-secondary">{label}</span>
+      <span className="flex items-center gap-2">
+        <span className="w-2 h-2 bg-va-green rounded-full shadow-[0_0_6px_rgba(16,185,129,0.8)]" />
+        <span className="font-semibold text-va-green">{status}</span>
+      </span>
     </div>
   );
 }

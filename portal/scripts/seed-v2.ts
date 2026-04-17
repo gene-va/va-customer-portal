@@ -195,7 +195,7 @@ async function seed() {
         email_confirm: true,
       });
 
-    if (clientSignUpError?.message?.includes('already exists')) {
+    if (clientSignUpError?.message?.toLowerCase().includes('already')) {
       console.log(`  ✓ Client user already exists: ${clientEmail}`);
       const { data: listData } = await supabase.auth.admin.listUsers();
       const existing = listData?.users?.find((u) => u.email === clientEmail);
@@ -243,26 +243,58 @@ async function seed() {
       console.log('  ✓ Client record created');
     }
 
-    // 3. Create report
-    console.log('\n3. Setting up Deal Room report...');
+    // 3. Ensure Investment Matching service subscription
+    console.log('\n3. Setting up Investment Matching client_service...');
+    const { data: existingService } = await supabase
+      .from('client_services')
+      .select('id')
+      .eq('client_id', clientRecordId)
+      .eq('service_type', 'investment_matching')
+      .maybeSingle();
+
+    let clientServiceId: string;
+    if (existingService) {
+      clientServiceId = existingService.id;
+      console.log('  ✓ client_service already exists');
+    } else {
+      const { data: createdService, error: createServiceErr } = await supabase
+        .from('client_services')
+        .insert({ client_id: clientRecordId, service_type: 'investment_matching' })
+        .select('id')
+        .single();
+      if (createServiceErr || !createdService) {
+        throw new Error(`Failed to create client_service: ${createServiceErr?.message}`);
+      }
+      clientServiceId = createdService.id;
+      console.log('  ✓ client_service created');
+    }
+
+    // 4. Create report
+    console.log('\n4. Setting up Deal Room report...');
     const { data: existingReport } = await supabase
       .from('reports')
       .select('id')
       .eq('client_id', clientRecordId)
-      .single();
+      .maybeSingle();
 
     if (existingReport) {
       // Update with latest data
       await supabase
         .from('reports')
-        .update({ report_data: reportData, title: 'Series B Deal Room' })
+        .update({
+          report_data: reportData,
+          title: 'Series B Deal Room',
+          client_service_id: clientServiceId,
+        })
         .eq('id', existingReport.id);
       console.log('  ✓ Report updated');
     } else {
       const { error: createReportError } = await supabase.from('reports').insert({
         client_id: clientRecordId,
+        client_service_id: clientServiceId,
         title: 'Series B Deal Room',
         status: 'published',
+        campaign_type: 'general',
         report_data: reportData,
         published_at: new Date().toISOString(),
       });

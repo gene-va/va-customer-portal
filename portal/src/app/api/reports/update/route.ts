@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/server';
-import { reportSchema } from '@/lib/schemas/report';
+import { reportSchema, isDealRoomData, isProspectResearchData } from '@/lib/schemas/report';
 
 export async function PUT(request: NextRequest) {
   try {
@@ -61,25 +61,31 @@ export async function PUT(request: NextRequest) {
 
     // Handle report_data update - archive old version first
     if (report_data !== undefined) {
+      let validatedData;
       try {
-        const validatedData = reportSchema.parse(report_data);
-
-        // Archive old version
-        if (currentReport.report_data) {
-          await serviceClient.from('report_versions').insert({
-            report_id,
-            report_data: currentReport.report_data,
-            created_by: currentUser.id,
-          });
+        // V3 (prospect research) and V2 (deal room) pass through as-is; v1 uses strict reportSchema
+        if (isProspectResearchData(report_data) || isDealRoomData(report_data)) {
+          validatedData = report_data;
+        } else {
+          validatedData = reportSchema.parse(report_data);
         }
-
-        updates.report_data = validatedData;
       } catch (err) {
         return NextResponse.json(
           { error: 'Invalid report data format' },
           { status: 400 }
         );
       }
+
+      // Archive old version
+      if (currentReport.report_data) {
+        await serviceClient.from('report_versions').insert({
+          report_id,
+          report_data: currentReport.report_data,
+          created_by: currentUser.id,
+        });
+      }
+
+      updates.report_data = validatedData;
     }
 
     // Handle other updates

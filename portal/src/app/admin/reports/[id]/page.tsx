@@ -1,7 +1,18 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { ChevronRight } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
-import Card from '@/components/ui/Card';
 import ReportEditor from '@/components/admin/ReportEditor';
+import DealRoomEditor from '@/components/admin/DealRoomEditor';
+import ProspectResearchAdminView from '@/components/admin/ProspectResearchAdminView';
+import GenericCampaignAdminEditor from '@/components/admin/GenericCampaignAdminEditor';
+import {
+  isDealRoomData,
+  isProspectResearchData,
+  type DealRoomData,
+  type ProspectResearchData,
+} from '@/lib/schemas/report';
+import { isServiceType, serviceLabel } from '@/lib/services/registry';
 
 async function getReport(id: string) {
   const supabase = await createClient();
@@ -12,45 +23,39 @@ async function getReport(id: string) {
     .eq('id', id)
     .single();
 
-  if (!report) {
-    notFound();
-  }
+  if (!report) notFound();
 
-  // Get client info
   const { data: client } = await supabase
     .from('clients')
-    .select('company_name')
+    .select('id, company_name')
     .eq('id', report.client_id)
     .single();
 
-  // Get previous versions
-  const { data: versions } = await supabase
-    .from('report_versions')
-    .select('*')
-    .eq('report_id', id)
-    .order('created_at', { ascending: false });
+  const { data: clientService } = report.client_service_id
+    ? await supabase
+        .from('client_services')
+        .select('id, service_type')
+        .eq('id', report.client_service_id)
+        .single()
+    : { data: null };
 
-  return {
-    report,
-    client,
-    versions: versions || [],
-  };
+  const { data: annotations } = await supabase
+    .from('investor_annotations')
+    .select('investor_name, status, note, updated_at')
+    .eq('report_id', id);
+
+  return { report, client, clientService, annotations: annotations ?? [] };
 }
 
-function StatusBadge({
-  status,
-}: {
-  status: 'draft' | 'published' | 'archived';
-}) {
+function StatusBadge({ status }: { status: 'draft' | 'published' | 'archived' }) {
   const colorClasses = {
-    draft: 'bg-yellow-100 text-yellow-800',
-    published: 'bg-green-100 text-green-800',
-    archived: 'bg-gray-100 text-gray-800',
+    draft: 'bg-va-amber/10 text-va-amber border border-va-amber/20',
+    published: 'bg-va-green-light text-va-green border border-va-green/20',
+    archived: 'bg-va-surface-2 text-va-text-muted border border-va-border',
   };
-
   return (
     <span
-      className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${colorClasses[status]}`}
+      className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-body font-medium ${colorClasses[status]}`}
     >
       {status.charAt(0).toUpperCase() + status.slice(1)}
     </span>
@@ -63,65 +68,93 @@ export default async function ReportDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { report, client, versions } = await getReport(id);
+  const { report, client, clientService, annotations } = await getReport(id);
+
+  const serviceType = clientService && isServiceType(clientService.service_type)
+    ? clientService.service_type
+    : null;
+
+  const isV2 = isDealRoomData(report.report_data);
+  const isV3 = isProspectResearchData(report.report_data);
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Breadcrumb */}
+      {client && (
+        <nav className="flex items-center gap-1.5 text-xs font-body text-va-text-muted">
+          <Link href="/admin/clients" className="hover:text-va-navy">
+            Clients
+          </Link>
+          <ChevronRight className="h-3 w-3" />
+          <Link href={`/admin/clients/${client.id}`} className="hover:text-va-navy">
+            {client.company_name}
+          </Link>
+          {serviceType && (
+            <>
+              <ChevronRight className="h-3 w-3" />
+              <span>{serviceLabel(serviceType)}</span>
+            </>
+          )}
+          <ChevronRight className="h-3 w-3" />
+          <span className="text-va-navy font-semibold truncate">{report.title}</span>
+        </nav>
+      )}
+
       <div className="flex items-start justify-between">
         <div>
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-bold text-gray-900">{report.title}</h1>
+          <div className="flex items-center gap-3 mb-2 flex-wrap">
+            <h1 className="font-heading text-3xl font-semibold text-va-navy">{report.title}</h1>
             <StatusBadge status={report.status} />
+            {serviceType && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-body font-bold bg-va-navy/10 text-va-navy border border-va-navy/15">
+                {serviceLabel(serviceType)}
+              </span>
+            )}
+            {report.campaign_type === 'event' && report.event_name && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-body font-bold bg-va-blue/10 text-va-blue border border-va-blue/20">
+                {report.event_name}
+              </span>
+            )}
           </div>
-          <p className="text-gray-600">
+          <p className="font-body text-va-text-secondary">
             Client: {client?.company_name || 'Unknown'}
           </p>
         </div>
       </div>
 
-      {/* Editor */}
-      <ReportEditor report={report} />
-
-      {/* Version History */}
-      {versions.length > 0 && (
-        <Card>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Version History
-          </h3>
-          <div className="space-y-3">
-            {versions.map((version, index) => (
-              <div
-                key={version.id}
-                className="p-4 border border-gray-200 rounded-lg"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-gray-900">
-                      Version {versions.length - index}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Created{' '}
-                      {new Date(version.created_at).toLocaleDateString(
-                        'en-US',
-                        {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        }
-                      )}
-                    </p>
-                  </div>
-                  <button className="text-sm font-medium text-brand-600 hover:text-brand-700">
-                    View
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
+      {isV3 ? (
+        <ProspectResearchAdminView
+          reportId={report.id}
+          initialData={report.report_data as ProspectResearchData}
+          title={report.title}
+          status={report.status}
+          phase={report.phase ?? 'review'}
+          annotations={annotations}
+        />
+      ) : isV2 ? (
+        <DealRoomEditor
+          reportId={report.id}
+          initialData={report.report_data as DealRoomData}
+          title={report.title}
+          status={report.status}
+          phase={report.phase ?? 'review'}
+          annotations={annotations}
+        />
+      ) : serviceType ? (
+        <GenericCampaignAdminEditor
+          reportId={report.id}
+          initialData={(report.report_data as Record<string, unknown>) ?? {}}
+          title={report.title}
+          status={report.status}
+          phase={report.phase ?? 'review'}
+          serviceType={serviceType}
+          eventName={report.event_name ?? null}
+          campaignType={(report.campaign_type ?? 'general') as 'event' | 'general'}
+          annotations={annotations}
+        />
+      ) : (
+        // Legacy V1 report without a mapped service
+        <ReportEditor report={report} />
       )}
     </div>
   );

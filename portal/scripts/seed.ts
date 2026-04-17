@@ -370,7 +370,7 @@ async function seed() {
       email_confirm: true,
     });
 
-    if (adminSignUpError?.message?.includes('already exists')) {
+    if (adminSignUpError?.message?.toLowerCase().includes('already')) {
       console.log(`  ✓ Admin user already exists: ${adminEmail}`);
       // Get existing user
       const { data: adminListData } = await supabase.auth.admin.listUsers();
@@ -408,7 +408,7 @@ async function seed() {
       email_confirm: true,
     });
 
-    if (clientSignUpError?.message?.includes('already exists')) {
+    if (clientSignUpError?.message?.toLowerCase().includes('already')) {
       console.log(`  ✓ Client user already exists: ${clientEmail}`);
       const { data: clientListData } = await supabase.auth.admin.listUsers();
       const existingClient = clientListData?.users?.find((u) => u.email === clientEmail);
@@ -468,24 +468,52 @@ async function seed() {
       throw new Error(`Failed to check client: ${existingClientError?.message}`);
     }
 
-    // 4. Create report
-    console.log('\n4. Setting up report...');
+    // 4. Ensure Investment Matching service subscription (V1 maps to 'other', but this seed targets investor work)
+    console.log('\n4. Setting up Investment Matching client_service...');
+    const { data: existingService } = await supabase
+      .from('client_services')
+      .select('id')
+      .eq('client_id', clientRecordId)
+      .eq('service_type', 'investment_matching')
+      .maybeSingle();
+
+    let clientServiceId: string;
+    if (existingService) {
+      clientServiceId = existingService.id;
+      console.log('  ✓ client_service already exists');
+    } else {
+      const { data: created, error: createSvcErr } = await supabase
+        .from('client_services')
+        .insert({ client_id: clientRecordId, service_type: 'investment_matching' })
+        .select('id')
+        .single();
+      if (createSvcErr || !created) {
+        throw new Error(`Failed to create client_service: ${createSvcErr?.message}`);
+      }
+      clientServiceId = created.id;
+      console.log('  ✓ client_service created');
+    }
+
+    // 5. Create report
+    console.log('\n5. Setting up report...');
     const { data: existingReport, error: existingReportError } = await supabase
       .from('reports')
       .select('id')
       .eq('client_id', clientRecordId)
-      .single();
+      .maybeSingle();
 
     if (existingReport) {
       console.log('  ✓ Report already exists');
-    } else if (existingReportError?.code === 'PGRST116') {
+    } else if (!existingReport) {
       // No rows returned, create new
       const { error: createReportError } = await supabase
         .from('reports')
         .insert({
           client_id: clientRecordId,
+          client_service_id: clientServiceId,
           title: 'Investor Matching Report',
           status: 'published',
+          campaign_type: 'general',
           report_data: reportData,
           published_at: new Date().toISOString(),
         });

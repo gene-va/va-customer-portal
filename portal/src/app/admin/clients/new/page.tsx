@@ -98,9 +98,9 @@ export default function NewClientPage() {
   return (
     <div className="max-w-2xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Create New Client</h1>
-        <p className="text-gray-600 mt-2">
-          Add a new client account to the platform
+        <h1 className="font-heading text-3xl font-bold text-va-text">Create New Client</h1>
+        <p className="text-va-text-secondary font-body mt-2">
+          Add a new client account to the platform.
         </p>
       </div>
 
@@ -147,13 +147,13 @@ export default function NewClientPage() {
 
           {/* Error Message */}
           {error && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-700">{error}</p>
+            <div className="p-4 bg-va-red/10 border border-va-red/30 rounded-card">
+              <p className="text-sm font-body text-va-red">{error}</p>
             </div>
           )}
 
           {/* Actions */}
-          <div className="flex gap-4 pt-6 border-t border-gray-200">
+          <div className="flex gap-4 pt-6 border-t border-va-border">
             <Button
               type="submit"
               variant="primary"

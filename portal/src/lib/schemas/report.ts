@@ -196,6 +196,19 @@ export interface DealRoomData {
   };
 }
 
+// --- Phases & prospect annotations ---
+
+export type ReportPhase = "review" | "outreach";
+
+export type AnnotationStatus = "pursue" | "already_known" | "skip";
+
+export interface InvestorAnnotation {
+  investor_name: string;
+  status: AnnotationStatus;
+  note: string | null;
+  updated_at: string;
+}
+
 // Type guard
 export function isDealRoomData(data: unknown): data is DealRoomData {
   return (
@@ -205,3 +218,121 @@ export function isDealRoomData(data: unknown): data is DealRoomData {
     (data as { version: string }).version === "v2"
   );
 }
+
+// --- V3: Prospect Research ---
+
+export type ProspectTier =
+  | "hot_prospect"
+  | "warm_prospect"
+  | "nurture"
+  | "low_priority"
+  | "not_relevant";
+
+export interface ProspectScores {
+  cost_scale_fit?: number;
+  program_fit?: number;
+  manufacturing_infrastructure?: number;
+  urgency_signals?: number;
+  development_stage?: number;
+  meeting_accessibility?: number;
+}
+
+export interface ProspectProgram {
+  name: string;
+  indication?: string;
+  stage?: string;
+  modality?: string;
+}
+
+export interface ProspectAttendee {
+  name: string;
+  title?: string;
+  seniority?: string;
+}
+
+export interface ProspectFunding {
+  round?: string | null;
+  amount?: string | null;
+  date?: string | null;
+  total_raised?: string | null;
+  funding_type?: string | null;
+}
+
+export interface Prospect {
+  id: string | number;
+  company: string;
+  tier: ProspectTier;
+  segment?: string;
+  location?: string;
+  total_score: number;
+  programmatic_score?: number;
+  curated_score?: number;
+  is_curated?: boolean;
+  curated_rationale?: string;
+  scores?: ProspectScores;
+
+  modality?: string;
+  modality_details?: string;
+  lead_stage?: string;
+  company_type?: string;
+  mfg_model?: string;
+  employee_count?: number | string;
+  public_private?: string;
+  highest_seniority?: string;
+  attendee_count?: number;
+
+  funding?: ProspectFunding | string | null;
+  programs?: ProspectProgram[];
+  attendees?: ProspectAttendee[];
+  concerns?: string[];
+  known_cdmos?: (string | { name?: string })[];
+  recommended_services?: string[];
+
+  outreach_angle?: string;
+  pf_rationale?: string;
+  mi_rationale?: string;
+  us_rationale?: string;
+  rec_rationale?: string;
+
+  duplicate_count?: number;
+  duplicate_names?: string[];
+}
+
+export interface ProspectResearchData {
+  version: "v3";
+  event: { name: string; date?: string; location?: string };
+  company: { name: string; tagline?: string };
+  weights?: ProspectScores;
+  prospects: Prospect[];
+  metadata: { generated_date: string; prepared_for: string; va_lead?: string };
+}
+
+export function isProspectResearchData(data: unknown): data is ProspectResearchData {
+  return (
+    typeof data === "object" &&
+    data !== null &&
+    "version" in data &&
+    (data as { version: string }).version === "v3"
+  );
+}
+
+export const DEFAULT_PROSPECT_WEIGHTS: Required<ProspectScores> = {
+  cost_scale_fit: 0.25,
+  program_fit: 0.2,
+  manufacturing_infrastructure: 0.18,
+  urgency_signals: 0.15,
+  development_stage: 0.14,
+  meeting_accessibility: 0.08,
+};
+
+export const PROSPECT_CATEGORY_META: Record<
+  keyof Required<ProspectScores>,
+  { short: string; label: string }
+> = {
+  cost_scale_fit: { short: "Cost", label: "Cost & Scale" },
+  program_fit: { short: "Prog", label: "Program Fit" },
+  manufacturing_infrastructure: { short: "Mfg", label: "Mfg Infra" },
+  urgency_signals: { short: "Urg", label: "Urgency" },
+  development_stage: { short: "Stage", label: "Dev Stage" },
+  meeting_accessibility: { short: "Meet", label: "Meeting" },
+};

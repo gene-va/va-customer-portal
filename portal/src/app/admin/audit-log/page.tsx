@@ -63,18 +63,20 @@ function formatDate(dateString: string): string {
 
 function ActionBadge({ action }: { action: string }) {
   const colors: Record<string, string> = {
-    client_created: 'bg-green-100 text-green-800',
-    client_deleted: 'bg-red-100 text-red-800',
-    client_updated: 'bg-blue-100 text-blue-800',
-    report_created: 'bg-green-100 text-green-800',
-    report_updated: 'bg-blue-100 text-blue-800',
-    report_deleted: 'bg-red-100 text-red-800',
+    client_created: 'bg-va-green/10 text-va-green border-va-green/25',
+    client_deleted: 'bg-va-red/10 text-va-red border-va-red/25',
+    client_updated: 'bg-va-blue/10 text-va-blue border-va-blue/25',
+    report_created: 'bg-va-green/10 text-va-green border-va-green/25',
+    report_updated: 'bg-va-blue/10 text-va-blue border-va-blue/25',
+    report_deleted: 'bg-va-red/10 text-va-red border-va-red/25',
   };
 
-  const color = colors[action] || 'bg-gray-100 text-gray-800';
+  const color = colors[action] || 'bg-va-surface-2 text-va-text-muted border-va-border';
 
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${color}`}>
+    <span
+      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-body font-bold border ${color}`}
+    >
       {action.replace(/_/g, ' ')}
     </span>
   );
@@ -85,79 +87,64 @@ export default async function AuditLogPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Audit Log</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="font-heading text-3xl font-bold text-va-text">Audit Log</h1>
+        <p className="text-va-text-secondary font-body mt-2">
           Track all admin actions and changes (last 50 entries)
         </p>
       </div>
 
-      {/* Audit Log Table */}
       <Card className="p-0 overflow-hidden">
         {auditLog.length === 0 ? (
-          <div className="p-8 text-center">
-            <p className="text-gray-600">No audit log entries yet</p>
+          <div className="p-8 text-center font-body">
+            <p className="text-va-text-muted">No audit log entries yet</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="border-b border-gray-200 bg-gray-50">
-                <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                    Timestamp
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                    Admin User
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                    Action
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                    Target
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                    Details
-                  </th>
+            <table className="w-full text-sm font-body">
+              <thead className="border-b border-va-border bg-va-surface-2">
+                <tr className="text-left">
+                  <th className="px-6 py-4 font-semibold text-va-text">Timestamp</th>
+                  <th className="px-6 py-4 font-semibold text-va-text">Admin User</th>
+                  <th className="px-6 py-4 font-semibold text-va-text">Action</th>
+                  <th className="px-6 py-4 font-semibold text-va-text">Target</th>
+                  <th className="px-6 py-4 font-semibold text-va-text">Details</th>
                 </tr>
               </thead>
               <tbody>
                 {auditLog.map((entry: AuditLogEntryWithEmail) => (
                   <tr
                     key={entry.id}
-                    className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
+                    className="border-b border-va-border hover:bg-va-surface-2 transition-colors"
                   >
-                    <td className="px-6 py-4 text-sm text-gray-700 whitespace-nowrap">
+                    <td className="px-6 py-4 text-va-text-muted whitespace-nowrap">
                       {formatDate(entry.created_at)}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      {entry.admin_email}
-                    </td>
-                    <td className="px-6 py-4 text-sm">
+                    <td className="px-6 py-4 text-va-text-secondary">{entry.admin_email}</td>
+                    <td className="px-6 py-4">
                       <ActionBadge action={entry.action_type} />
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-700">
+                    <td className="px-6 py-4 text-va-text-secondary">
                       {entry.target_table && entry.target_id ? (
-                        <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">
-                          {entry.target_table}:{' '}
-                          {entry.target_id.substring(0, 8)}...
+                        <span className="font-mono text-xs bg-va-surface-2 border border-va-border px-2 py-1 rounded text-va-text-muted">
+                          {entry.target_table}: {entry.target_id.substring(0, 8)}…
                         </span>
                       ) : (
-                        <span className="text-gray-400">-</span>
+                        <span className="text-va-text-muted">—</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-sm">
+                    <td className="px-6 py-4">
                       {entry.details && Object.keys(entry.details).length > 0 ? (
                         <details className="cursor-pointer">
-                          <summary className="text-gray-600 hover:text-gray-900 font-medium">
+                          <summary className="text-va-text-secondary hover:text-va-text font-medium">
                             Show details
                           </summary>
-                          <pre className="mt-3 p-3 bg-gray-50 rounded-lg text-xs overflow-auto max-h-32 text-gray-700">
+                          <pre className="mt-3 p-3 bg-va-surface-2 border border-va-border rounded-card text-xs overflow-auto max-h-32 text-va-text-secondary">
                             {JSON.stringify(entry.details, null, 2)}
                           </pre>
                         </details>
                       ) : (
-                        <span className="text-gray-400">-</span>
+                        <span className="text-va-text-muted">—</span>
                       )}
                     </td>
                   </tr>

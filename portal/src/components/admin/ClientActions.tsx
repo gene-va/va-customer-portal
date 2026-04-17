@@ -55,9 +55,9 @@ export default function ClientActions({
           Delete Client
         </Button>
       ) : (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-sm">
+        <div className="bg-va-red/10 border border-va-red/25 rounded-lg p-6 max-w-sm">
           <h3 className="font-semibold text-red-900 mb-2">Delete Client?</h3>
-          <p className="text-sm text-red-800 mb-4">
+          <p className="text-sm text-va-red mb-4">
             Are you sure you want to delete <strong>{clientName}</strong>? This
             action cannot be undone.
           </p>

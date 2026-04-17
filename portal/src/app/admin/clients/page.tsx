@@ -42,10 +42,10 @@ interface Client {
 function StatusBadge({ isActive }: { isActive: boolean }) {
   return (
     <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-body font-bold border ${
         isActive
-          ? 'bg-green-100 text-green-800'
-          : 'bg-gray-100 text-gray-800'
+          ? 'bg-va-green/10 text-va-green border-va-green/25'
+          : 'bg-va-surface-2 text-va-text-muted border-va-border'
       }`}
     >
       {isActive ? 'Active' : 'Inactive'}
@@ -70,8 +70,8 @@ export default async function ClientsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Clients</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="font-heading text-3xl font-bold text-va-text">Clients</h1>
+          <p className="text-va-text-secondary font-body mt-1">
             Manage client accounts and permissions
           </p>
         </div>
@@ -86,65 +86,39 @@ export default async function ClientsPage() {
       {/* Clients Table */}
       <Card className="p-0 overflow-hidden">
         {clients.length === 0 ? (
-          <div className="p-8 text-center">
-            <p className="text-gray-600">No clients yet</p>
+          <div className="p-8 text-center font-body">
+            <p className="text-va-text-secondary">No clients yet</p>
             <a href="/admin/clients/new" className="mt-4 inline-block">
               <Button variant="primary">Create First Client</Button>
             </a>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="border-b border-gray-200 bg-gray-50">
-                <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                    Company Name
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                    Contact Name
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                    Contact Email
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                    Status
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                    Reports
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                    Created
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                    Actions
-                  </th>
+            <table className="w-full text-sm font-body">
+              <thead className="border-b border-va-border bg-va-surface-2">
+                <tr className="text-left">
+                  <th className="px-6 py-4 font-semibold text-va-text">Company Name</th>
+                  <th className="px-6 py-4 font-semibold text-va-text">Contact Name</th>
+                  <th className="px-6 py-4 font-semibold text-va-text">Contact Email</th>
+                  <th className="px-6 py-4 font-semibold text-va-text">Status</th>
+                  <th className="px-6 py-4 font-semibold text-va-text">Reports</th>
+                  <th className="px-6 py-4 font-semibold text-va-text">Created</th>
+                  <th className="px-6 py-4 font-semibold text-va-text">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {clients.map((client: Client) => (
                   <tr
                     key={client.id}
-                    className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
+                    className="border-b border-va-border hover:bg-va-surface-2 transition-colors"
                   >
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                      {client.company_name}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      {client.contact_name || '-'}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      {client.contact_email || '-'}
-                    </td>
-                    <td className="px-6 py-4 text-sm">
-                      <StatusBadge isActive={client.is_active} />
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      {client.reportCount}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      {formatDate(client.created_at)}
-                    </td>
-                    <td className="px-6 py-4 text-sm">
+                    <td className="px-6 py-4 font-semibold text-va-text">{client.company_name}</td>
+                    <td className="px-6 py-4 text-va-text-secondary">{client.contact_name || '—'}</td>
+                    <td className="px-6 py-4 text-va-text-secondary">{client.contact_email || '—'}</td>
+                    <td className="px-6 py-4"><StatusBadge isActive={client.is_active} /></td>
+                    <td className="px-6 py-4 text-va-text-secondary">{client.reportCount}</td>
+                    <td className="px-6 py-4 text-va-text-muted">{formatDate(client.created_at)}</td>
+                    <td className="px-6 py-4">
                       <a href={`/admin/clients/${client.id}`}>
                         <Button variant="ghost" size="sm" className="flex items-center gap-1">
                           <Eye size={16} />

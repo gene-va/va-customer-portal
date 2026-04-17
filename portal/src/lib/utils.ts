@@ -45,20 +45,20 @@ export function getFitBadgeColors(score: number): {
   const level = getFitLevel(score);
   switch (level) {
     case 'strong':
-      return { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200', ring: 'text-green-500' };
+      return { bg: 'bg-va-green/10', text: 'text-va-green', border: 'border-va-green/25', ring: 'text-va-green' };
     case 'good':
-      return { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200', ring: 'text-blue-500' };
+      return { bg: 'bg-va-blue/10', text: 'text-va-blue', border: 'border-va-blue/25', ring: 'text-va-blue' };
     case 'moderate':
-      return { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', ring: 'text-amber-500' };
+      return { bg: 'bg-va-amber/10', text: 'text-va-amber', border: 'border-va-amber/25', ring: 'text-va-amber' };
     case 'exploring':
-      return { bg: 'bg-gray-50', text: 'text-gray-600', border: 'border-gray-200', ring: 'text-gray-400' };
+      return { bg: 'bg-va-surface-2', text: 'text-va-text-muted', border: 'border-va-border', ring: 'text-va-text-muted' };
   }
 }
 
 export function getScoreBarColor(percentage: number): string {
-  if (percentage >= 80) return 'bg-green-500';
-  if (percentage >= 50) return 'bg-amber-500';
-  return 'bg-red-400';
+  if (percentage >= 80) return 'bg-va-green';
+  if (percentage >= 50) return 'bg-va-amber';
+  return 'bg-va-red';
 }
 
 export function getScoreBarLabel(percentage: number): string {
